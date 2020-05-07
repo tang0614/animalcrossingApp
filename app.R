@@ -83,9 +83,8 @@ ui <- fluidPage(
             fluidRow(
                 column(11,
                        helpText("Select the top n best/worst relationship:"),
-                       sliderInput("rank", "Rank:",
-                                   min = 1, max = 20,
-                                   value = 10)
+                       uiOutput("render_ui_genes")
+                      
                        
                        
                 )
@@ -102,7 +101,7 @@ ui <- fluidPage(
             fluidRow(
                 column(11, 
                        
-                       tags$p(HTML("<b>Dataset Description</b> :This database has 391 villagers with 8 new ones.<a href=\"https://nookipedia.com/wiki/Animal_Crossing:_New_Horizons/Characters\">References</a>")),
+                       tags$p(HTML("<b>Dataset Description</b> :This database has 391 villagers with 8 new ones.<a href=\"https://nookipedia.com/wiki/Animal_Crossing:_New_Horizons/Characters\">References</a>"))
                        
                 ))
             
@@ -175,9 +174,7 @@ ui <- fluidPage(
 # Define server logic to summarize and view selected dataset ----
 server <- function(input, output,session) {
     
- 
-    
-    
+
     
     output$value <- renderText({ missed_genes() })
     
@@ -205,6 +202,8 @@ server <- function(input, output,session) {
         
     })
     
+
+    
     dataInput2 <- reactive({
         m<-dataInput1()
         list_1<-m$aniA
@@ -216,6 +215,16 @@ server <- function(input, output,session) {
             m <- subset(m, sub_list1)
         } 
         m
+    })
+    
+    output$render_ui_genes<- renderUI({
+        m<-dataInput2()
+        l<-length(unique(m$aniB))
+                  
+        sliderInput("rank", "Rank:",
+                    min = 1, max =l,
+                    value = floor(l/50))
+        
     })
     
     dataSort <- reactive({
@@ -277,7 +286,7 @@ server <- function(input, output,session) {
         
         ColourScale <- 'd3.scaleOrdinal()
             .domain(["lions", "tigers"])
-           .range(["#D033D0","#EC9BC9"]);'
+           .range(["#4C3FBF","#EC9BC9"]);'
         
         
         MisLinks<-as.data.frame(l)
@@ -288,11 +297,11 @@ server <- function(input, output,session) {
                      NodeID = "unique_gene",
                      Nodesize = "size",
                      Group = "group",
-                     fontSize = 20, # Font size
+                     fontSize = 15, # Font size
                      linkDistance = networkD3::JS("function(d) { return 50;}"),
                      linkWidth = networkD3::JS("function(d) { return Math.abs(d.value) *0.5 ; }"),
-                     opacity = 0.8,
-                     opacityNoHover = 0.6,
+                     opacity = 0.6,
+                     opacityNoHover = 1,
                      colourScale = JS(ColourScale))
     })
 
@@ -318,17 +327,7 @@ server <- function(input, output,session) {
     
     
 
-    
-    output$downloadV2 <- downloadHandler(
-        filename = function() {
-            'animal.html'
-        },
-        content = function(file) {
-            saveNetwork(vis2(), file)
-        }
-    )
-    
-    
+
     
     
 }
